@@ -12,7 +12,7 @@ using namespace std;
 /*
 FOR TA/PROFESSOR
 
-Uncomment each step/section as needed, the top comment of each block describes which part, sections are repeated for easy un b
+Uncomment each step/section as needed, the top comment of each block describes which part, sections are repeated for ease of use
 */
 //STEP 1
 
@@ -31,7 +31,7 @@ Uncomment each step/section as needed, the top comment of each block describes w
     }
 }
 
-// Host function
+//Host 
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -52,25 +52,21 @@ int main() {
         int size = sizes[idx];
         int matrix_size = size * size * sizeof(float);
 
-        // Allocate memory for matrices on host
         float* h_A = (float*)malloc(matrix_size);
         float* h_B = (float*)malloc(matrix_size);
         float* h_C = (float*)malloc(matrix_size);
         float* h_C_CUDA = (float*)malloc(matrix_size);
 
-        // Initialize matrices with random values
         for (int i = 0; i < size * size; ++i) {
             h_A[i] = static_cast<float>(rand()) / RAND_MAX;
             h_B[i] = static_cast<float>(rand()) / RAND_MAX;
         }
 
-        // Allocate memory for matrices on device
         float* d_A, * d_B, * d_C;
         cudaMalloc((void**)&d_A, matrix_size);
         cudaMalloc((void**)&d_B, matrix_size);
         cudaMalloc((void**)&d_C, matrix_size);
 
-        // Transfer data from host to device and measure time
         cudaEvent_t start, stop;
         cudaEventCreate(&start);
         cudaEventCreate(&stop);
@@ -84,21 +80,11 @@ int main() {
         float milliseconds = 0;
         cudaEventElapsedTime(&milliseconds, start, stop);
         printf("Matrix size: %dx%d, Transfer time: %.2f ms\n", size, size, milliseconds);
-
-        // Define execution configuration
         dim3 threadsPerBlock(BLOCK_SIZE, BLOCK_SIZE);
         dim3 numBlocks((size + BLOCK_SIZE - 1) / BLOCK_SIZE, (size + BLOCK_SIZE - 1) / BLOCK_SIZE);
-
-        // Launch kernel
         squareMatMul << <numBlocks, threadsPerBlock >> > (d_C, d_A, d_B, size);
-
-        // Transfer data back to host
         cudaMemcpy(h_C_CUDA, d_C, matrix_size, cudaMemcpyDeviceToHost);
-
-        // Perform matrix multiplication on host for validation
         matrixMulHost(h_C, h_A, h_B, size);
-
-        // Compare the results
         bool success = true;
         float epsilon = 1e-5;
         for (int i = 0; i < size * size; ++i) {
@@ -107,13 +93,10 @@ int main() {
                 break;
             }
         }
-
-        // Free device memory
         cudaFree(d_A);
         cudaFree(d_B);
         cudaFree(d_C);
 
-        // Free host memory
         free(h_A);
         free(h_B);
         free(h_C);
@@ -130,12 +113,9 @@ int main() {
     return 0;
 }
 
-
+*/
 // save to csv Host to Dev
-
-// CUDA kernel for matrix multiplication
-
-// Host function
+/*
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -210,10 +190,9 @@ int main() {
 
     return 0;
 }
-
+*/
 //Save to csv Dev to Host
-// CUDA kernel for matrix multiplication
-// Host function
+/*
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -299,9 +278,7 @@ int main() {
     return 0;
 }*/
 //STEP 2
-
-// CUDA kernel for matrix multiplication
-// Host function for matrix multiplication
+/*
 __global__ void Mul_NM(float* P, const float* N, const float* M, int dimension_width) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         for (int row = 0; row < dimension_width; row++) {
@@ -412,8 +389,9 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
+*/
 //Step 3
+/*
 __global__ void Mul_NM(float* P, float* N, float* M, int dimension_width) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     int col = blockIdx.y * blockDim.y + threadIdx.y;
@@ -539,3 +517,4 @@ int main() {
 
     return 0;
 }
+*/
