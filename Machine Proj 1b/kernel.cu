@@ -17,16 +17,17 @@ Uncomment each step/section as needed, the top comment of each block describes w
 //STEP 1
 
 // CUDA kernel for matrix multiplication
-/*__global__ void squareMatMul(float* P, float* N, float* M, int dimension_width) {
-    if (threadIdx.x == 0 && blockIdx.x == 0) {
-        for (int row = 0; row < dimension_width; row++) {
-            for (int col = 0; col < dimension_width; col++) {
-                float sum = 0.0f;
-                for (int k = 0; k < dimension_width; k++) {
-                    sum += N[row * dimension_width + k] * M[k * dimension_width + col];
-                }
-                P[row * dimension_width + col] = sum;
-            }
+#define BLOCK_SIZE 16
+__global__ void squareMatMul(float* P, float* N, float* M, int dimension_width) {
+    int row = blockIdx.x * blockDim.x + threadIdx.x;
+    int col = blockIdx.y * blockDim.y + threadIdx.y;
+
+    int idx = row + col * dimension_width;
+    for (int k = 0; k < dimension_width; k++) {
+        int temp_idx1 = row + k * dimension_width;
+        int temp_idx2 = k + col * dimension_width;
+        if (row < dimension_width && col < dimension_width) {
+            P[idx] += N[temp_idx1] * M[temp_idx2];
         }
     }
 }
@@ -113,7 +114,7 @@ int main() {
     return 0;
 }
 
-*/
+
 // save to csv Host to Dev
 /*
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
@@ -391,7 +392,7 @@ int main(int argc, char* argv[]) {
 }
 */
 //Step 3
-/*
+ /*
 __global__ void Mul_NM(float* P, float* N, float* M, int dimension_width) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     int col = blockIdx.y * blockDim.y + threadIdx.y;
