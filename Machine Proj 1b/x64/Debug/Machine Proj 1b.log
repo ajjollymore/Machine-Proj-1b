@@ -1,7 +1,6 @@
 ﻿  Compiling CUDA source file kernel.cu...
   
-  C:\Users\20ajj3\source\repos\Machine Proj 1b\Machine Proj 1b>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\bin\HostX64\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include"  -G   --keep-dir x64\Debug  -maxrregcount=0   --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/Fdx64\Debug\vc143.pdb" -o "C:\Users\20ajj3\source\repos\Machine Proj 1b\Machine Proj 1b\x64\Debug\kernel.cu.obj" "C:\Users\20ajj3\source\repos\Machine Proj 1b\Machine Proj 1b\kernel.cu" 
+  C:\Users\20ajj3\git\Machine-Proj-1b\Machine Proj 1b>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\bin\HostX64\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include"  -G   --keep-dir x64\Debug  -maxrregcount=0   --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/Fdx64\Debug\vc143.pdb" -o "C:\Users\20ajj3\git\Machine-Proj-1b\Machine Proj 1b\x64\Debug\kernel.cu.obj" "C:\Users\20ajj3\git\Machine-Proj-1b\Machine Proj 1b\kernel.cu" 
   kernel.cu
-  tmpxft_000073ec_00000000-7_kernel.cudafe1.cpp
-C:\Users\20ajj3\source\repos\Machine Proj 1b\Machine Proj 1b\kernel.cu(426): warning C4305: 'initializing': truncation from 'double' to 'float'
-  Machine Proj 1b.vcxproj -> C:\Users\20ajj3\source\repos\Machine Proj 1b\x64\Debug\Machine Proj 1b.exe
+  tmpxft_0000261c_00000000-7_kernel.cudafe1.cpp
+  Machine Proj 1b.vcxproj -> C:\Users\20ajj3\git\Machine-Proj-1b\x64\Debug\Machine Proj 1b.exe

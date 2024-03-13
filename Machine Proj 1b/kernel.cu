@@ -1,21 +1,33 @@
-﻿#include <stdio.h>
+﻿#include <math.h>
+#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
+#include <ctime>
+#include <cuda.h>
+#include <cmath>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
-#define BLOCK_SIZE 1
+using namespace std;
+/*
+FOR TA/PROFESSOR
+
+Uncomment each step/section as needed, the top comment of each block describes which part, sections are repeated for easy un b
+*/
 //STEP 1
 
 // CUDA kernel for matrix multiplication
-__global__ void matrixMul(float* C, const float* A, const float* B, int size) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < size && col < size) {
-        float val = 0.0f;
-        for (int k = 0; k < size; ++k) {
-            val += A[row * size + k] * B[k * size + col];
+/*__global__ void squareMatMul(float* P, float* N, float* M, int dimension_width) {
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        for (int row = 0; row < dimension_width; row++) {
+            for (int col = 0; col < dimension_width; col++) {
+                float sum = 0.0f;
+                for (int k = 0; k < dimension_width; k++) {
+                    sum += N[row * dimension_width + k] * M[k * dimension_width + col];
+                }
+                P[row * dimension_width + col] = sum;
+            }
         }
-        C[row * size + col] = val;
     }
 }
 
@@ -78,7 +90,7 @@ int main() {
         dim3 numBlocks((size + BLOCK_SIZE - 1) / BLOCK_SIZE, (size + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
         // Launch kernel
-        matrixMul << <numBlocks, threadsPerBlock >> > (d_C, d_A, d_B, size);
+        squareMatMul << <numBlocks, threadsPerBlock >> > (d_C, d_A, d_B, size);
 
         // Transfer data back to host
         cudaMemcpy(h_C_CUDA, d_C, matrix_size, cudaMemcpyDeviceToHost);
@@ -122,18 +134,6 @@ int main() {
 // save to csv Host to Dev
 
 // CUDA kernel for matrix multiplication
-__global__ void matrixMul(float* C, const float* A, const float* B, int size) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < size && col < size) {
-        float val = 0.0f;
-        for (int k = 0; k < size; ++k) {
-            val += A[row * size + k] * B[k * size + col];
-        }
-        C[row * size + col] = val;
-    }
-}
 
 // Host function
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
@@ -212,21 +212,7 @@ int main() {
 }
 
 //Save to csv Dev to Host
-// 
 // CUDA kernel for matrix multiplication
-__global__ void matrixMul(float* C, const float* A, const float* B, int size) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < size && col < size) {
-        float val = 0.0f;
-        for (int k = 0; k < size; ++k) {
-            val += A[row * size + k] * B[k * size + col];
-        }
-        C[row * size + col] = val;
-    }
-}
-
 // Host function
 void matrixMulHost(float* C, const float* A, const float* B, int size) {
     for (int i = 0; i < size; ++i) {
@@ -236,7 +222,7 @@ void matrixMulHost(float* C, const float* A, const float* B, int size) {
                 val += A[i * size + k] * B[k * size + j];
             }
             C[i * size + j] = val;
-        }a
+        }
     }
 }
 
@@ -311,134 +297,245 @@ int main() {
     printf("Data saved to transfer_times_back.csv\n");
 
     return 0;
-}
+}*/
 //STEP 2
 
 // CUDA kernel for matrix multiplication
-__global__ void matrixMul(float* C, const float* A, const float* B, int size) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < size && col < size) {
-        float val = 0.0f;
-        for (int k = 0; k < size; ++k) {
-            val += A[row * size + k] * B[k * size + col];
-        }
-        C[row * size + col] = val;
-    }
-}
-
 // Host function for matrix multiplication
-void matrixMulHost(float* C, const float* A, const float* B, int size) {
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            float val = 0.0f;
-            for (int k = 0; k < size; ++k) {
-                val += A[i * size + k] * B[k * size + j];
+__global__ void Mul_NM(float* P, const float* N, const float* M, int dimension_width) {
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        for (int row = 0; row < dimension_width; row++) {
+            for (int col = 0; col < dimension_width; col++) {
+                float sum = 0.0f;
+                for (int k = 0; k < dimension_width; k++) {
+                    sum += N[row * dimension_width + k] * M[k * dimension_width + col];
+                }
+                P[row * dimension_width + col] = sum;
             }
-            C[i * size + j] = val;
         }
     }
 }
 
-// Function to check if the GPU and CPU results match within a tolerance
-bool checkResults(const float* A, const float* B, int size, float epsilon) {
-    for (int i = 0; i < size * size; ++i) {
-        if (abs(A[i] - B[i]) > epsilon) {
-            return false;
+
+void MulHost(float* P, const float* N, const float* M, int dimension_width) {
+    for (int x = 0; x < dimension_width; x++) {
+        for (int y = 0; y < dimension_width; y++) {
+            float val = 0.0f;
+            for (int w = 0; w < dimension_width; w++) {
+                int move_1 = x + dimension_width * w;
+                int move_2 = w * dimension_width + y;
+                val = val + N[move_1] * M[move_2];
+            }
+            P[x * dimension_width + y] = val;
         }
     }
-    return true;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
     FILE* fp;
-    fp = fopen("multiplication_times32.csv", "w");
+    fp = fopen("matrix32_times.csv", "w");
     if (fp == NULL) {
         printf("Error opening file!\n");
         return 1;
     }
 
-    fprintf(fp, "Matrix Size,CPU Time (ms),GPU Time (ms)\n");
+    fprintf(fp, "Matrix Size,Mul Time CPU (ms),Mul Time GPU (ms)\n");
 
-    int sizes[] = { 100, 250, 500, 1000, 1500 };
-    int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
+    int dimension[5] = { 100, 250, 500, 1000, 1500 };
+    for (int index_value = 0; index_value < 5; ++index_value)
+    {
+        int dimension_width = dimension[index_value];
+        int matrix_dim = dimension_width * dimension_width * sizeof(float);
 
-    for (int idx = 0; idx < num_sizes; ++idx) {
-        int size = sizes[idx];
-        int matrix_size = size * size * sizeof(float);
+        float gpu_time = 0.0f;
+        float cpu_time = 0.0f;
 
-        // Allocate memory for matrices on host
-        float* h_A = (float*)malloc(matrix_size);
-        float* h_B = (float*)malloc(matrix_size);
-        float* h_C_CPU = (float*)malloc(matrix_size);
-        float* h_C_GPU = (float*)malloc(matrix_size);
+        float* hostN = (float*)malloc(matrix_dim);
+        float* hostM = (float*)malloc(matrix_dim);
+        float* hostP = (float*)malloc(matrix_dim);
 
-        // Initialize matrices with random values
-        for (int i = 0; i < size * size; ++i) {
-            h_A[i] = static_cast<float>(rand()) / RAND_MAX;
-            h_B[i] = static_cast<float>(rand()) / RAND_MAX;
+        for (int i = 0; i < dimension_width * dimension_width; ++i) {
+            hostN[i] = static_cast<float>(rand() / RAND_MAX);
+            hostM[i] = static_cast<float>(rand() / RAND_MAX);
         }
 
-        // Perform matrix multiplication on CPU and measure time
-        cudaEvent_t start_CPU, stop_CPU;
-        cudaEventCreate(&start_CPU);
-        cudaEventCreate(&stop_CPU);
+        float* deviceN, * deviceM, * deviceP;
 
-        cudaEventRecord(start_CPU);
-        matrixMulHost(h_C_CPU, h_A, h_B, size);
-        cudaEventRecord(stop_CPU);
+        cudaMalloc((void**)&deviceN, matrix_dim);
+        cudaMalloc((void**)&deviceM, matrix_dim);
+        cudaMalloc((void**)&deviceP, matrix_dim);
 
-        cudaEventSynchronize(stop_CPU);
-        float milliseconds_CPU = 0;
-        cudaEventElapsedTime(&milliseconds_CPU, start_CPU, stop_CPU);
+        cudaMemcpy(deviceN, hostN, matrix_dim, cudaMemcpyHostToDevice);
+        cudaMemcpy(deviceM, hostM, matrix_dim, cudaMemcpyHostToDevice);
 
-        // Perform matrix multiplication on GPU and measure time
-        cudaEvent_t start_GPU, stop_GPU;
-        cudaEventCreate(&start_GPU);
-        cudaEventCreate(&stop_GPU);
+        cudaEvent_t start_instance, stop_instance;
+        cudaEventCreate(&start_instance);
+        cudaEventCreate(&stop_instance);
+        cudaEventRecord(start_instance, 0);
 
-        cudaEventRecord(start_GPU);
+        dim3 threadsPerBlock(1);
+        dim3 numberOfBlocks(1);
 
-        float* d_A, * d_B, * d_C;
-        cudaMalloc((void**)&d_A, matrix_size);
-        cudaMalloc((void**)&d_B, matrix_size);
-        cudaMalloc((void**)&d_C, matrix_size);
+        Mul_NM << < numberOfBlocks, threadsPerBlock >> > (deviceN, deviceM, deviceP, dimension_width);
 
-        cudaMemcpy(d_A, h_A, matrix_size, cudaMemcpyHostToDevice);
-        cudaMemcpy(d_B, h_B, matrix_size, cudaMemcpyHostToDevice);
+        cudaEventRecord(stop_instance, 0);
+        cudaEventSynchronize(stop_instance);
+        cudaEventElapsedTime(&gpu_time, start_instance, stop_instance);
 
-        dim3 threadsPerBlock(1, 1);
-        dim3 numBlocks(1, 1);
-        matrixMul << <numBlocks, threadsPerBlock >> > (d_C, d_A, d_B, size);
+        cudaMemcpy(hostP, deviceP, matrix_dim, cudaMemcpyDeviceToHost);
 
-        cudaMemcpy(h_C_GPU, d_C, matrix_size, cudaMemcpyDeviceToHost);
+        clock_t start = clock();
+        MulHost(hostN, hostM, hostP, dimension_width);
+        clock_t stop = clock();
+        cpu_time = (float)(stop - start) * 1000.0f / CLOCKS_PER_SEC;
 
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
+        cout << "GPU Time: " << gpu_time << endl;
+        cout << "CPU Time: " << cpu_time << endl;
 
-        cudaEventRecord(stop_GPU);
-        cudaEventSynchronize(stop_GPU);
-        float milliseconds_GPU = 0;
-        cudaEventElapsedTime(&milliseconds_GPU, start_GPU, stop_GPU);
+        fprintf(fp, "%d,%.2f,%.2f\n", dimension_width, cpu_time, gpu_time);
 
-        // Check if CPU and GPU results match
-        float epsilon = 1e-5;
-        bool match = checkResults(h_C_CPU, h_C_GPU, size, epsilon);
+        cudaFree(deviceN);
+        cudaFree(deviceM);
+        cudaFree(deviceP);
 
-        fprintf(fp, "%d,%.2f,%.2f\n", size, milliseconds_CPU, milliseconds_GPU);
+        free(hostN);
+        free(hostM);
+        free(hostP);
 
-        // Free host memory
-        free(h_A);
-        free(h_B);
-        free(h_C_CPU);
-        free(h_C_GPU);
+        cudaEventDestroy(start_instance);
+        cudaEventDestroy(stop_instance);
     }
 
     fclose(fp);
-    printf("Data saved to multiplication_times.csv\n");
+    printf("Data saved to matrix32_times.csv\n");
 
     return 0;
 }
 
+//Step 3
+__global__ void Mul_NM(float* P, float* N, float* M, int dimension_width) {
+    int row = blockIdx.x * blockDim.x + threadIdx.x;
+    int col = blockIdx.y * blockDim.y + threadIdx.y;
+
+    int idx = row + col * dimension_width;
+    for (int k = 0; k < dimension_width; k++) {
+        int temp_idx1 = row + k * dimension_width;
+        int temp_idx2 = k + col * dimension_width;
+        if (row < dimension_width && col < dimension_width) {
+            P[idx] += N[temp_idx1] * M[temp_idx2];
+        }
+    }
+}
+
+void MulHost(float* P, const float* N, const float* M, int dimension_width) {
+    for (int x = 0; x < dimension_width; x++) {
+        for (int y = 0; y < dimension_width; y++) {
+            float val = 0.0f;
+            for (int w = 0; w < dimension_width; w++) {
+                int move_1 = x + dimension_width * w;
+                int move_2 = w * dimension_width + y;
+                val = val + N[move_1] * M[move_2];
+            }
+            P[x * dimension_width + y] = val;
+        }
+    }
+}
+
+int main() {
+    FILE* fp;
+    fp = fopen("matrix_P3_times.csv", "w");
+    if (fp == NULL) {
+        printf("Error opening file!\n");
+        return 1;
+    }
+
+    fprintf(fp, "Matrix Size,Block Size,Mul Time CPU (ms),Mul Time GPU (ms)\n");
+
+    int dimension[5] = { 100, 250, 500, 1000, 1500 };
+    int blocksize[5] = { 2, 5, 10, 25, 32 };
+
+    for (int i = 0; i < 5; i++)
+    {
+        int blockdim = blocksize[i];
+
+        for (int x = 0; x < 5; x++) {
+            int dimension_width = dimension[x];
+            size_t matrix_dim = dimension_width * dimension_width * sizeof(float);
+
+            float gpu_time = 0.0f;
+            float cpu_time = 0.0f;
+
+            float* hostN = (float*)malloc(matrix_dim);
+            float* hostM = (float*)malloc(matrix_dim);
+            float* hostP = (float*)malloc(matrix_dim);
+
+            for (int i = 0; i < dimension_width * dimension_width; i++) {
+                hostN[i] = static_cast<float>(rand() / RAND_MAX);
+                hostM[i] = static_cast<float>(rand() / RAND_MAX);
+                hostP[i] = 0.0f;
+            }
+
+            float* deviceN, * deviceM, * deviceP;
+
+            cudaMalloc((void**)&deviceN, matrix_dim);
+            cudaMalloc((void**)&deviceM, matrix_dim);
+            cudaMalloc((void**)&deviceP, matrix_dim);
+
+            cudaMemcpy(deviceN, hostN, matrix_dim, cudaMemcpyHostToDevice);
+            cudaMemcpy(deviceM, hostM, matrix_dim, cudaMemcpyHostToDevice);
+            cudaMemcpy(deviceP, hostP, matrix_dim, cudaMemcpyHostToDevice);
+
+            cudaEvent_t start_instance, stop_instance;
+            cudaEventCreate(&start_instance);
+            cudaEventCreate(&stop_instance);
+            cudaEventRecord(start_instance, 0);
+
+            dim3 threadsPerBlock(blockdim, blockdim);
+            dim3 Blocks((int)ceil(dimension_width / (float)threadsPerBlock.x), (int)ceil(dimension_width / (float)threadsPerBlock.y));
+            Mul_NM << <Blocks, threadsPerBlock >> > (deviceP, deviceN, deviceM, dimension_width);
+
+            cudaEventRecord(stop_instance);
+            cudaEventSynchronize(stop_instance);
+            cudaEventElapsedTime(&gpu_time, start_instance, stop_instance);
+            cudaEventDestroy(start_instance);
+            cudaEventDestroy(stop_instance);
+
+            cudaMemcpy(hostP, deviceP, matrix_dim, cudaMemcpyDeviceToHost);
+
+            float* PTemp = (float*)malloc(matrix_dim);
+            cudaEventCreate(&start_instance);
+            cudaEventCreate(&stop_instance);
+            cudaEventRecord(start_instance);
+
+            MulHost(hostN, hostM, hostP, dimension_width);
+
+            cudaEventRecord(stop_instance);
+            cudaEventSynchronize(stop_instance);
+            cudaEventElapsedTime(&cpu_time, start_instance, stop_instance);
+            cudaEventDestroy(start_instance);
+            cudaEventDestroy(stop_instance);
+
+            cout << "Matrix Size: " << dimension_width << endl;
+            cout << "Block Dim: " << blockdim << endl;
+            cout << "GPU Time: " << gpu_time << endl;
+            cout << "CPU Time: " << cpu_time << endl;
+            cout << endl;
+
+            fprintf(fp, "%d,%d,%.2f,%.2f\n", dimension_width, blockdim, cpu_time, gpu_time);
+
+            cudaFree(deviceN);
+            cudaFree(deviceM);
+            cudaFree(deviceP);
+
+            free(hostN);
+            free(hostM);
+            free(hostP);
+        }
+    }
+
+    fclose(fp);
+    printf("Data saved to matrix_P3_times.csv\n");
+
+    return 0;
+}
